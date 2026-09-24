@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Ujian CBT - XI TKJ (5 Soal)</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --border: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 750px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            padding: 30px;
+            border: 1px solid var(--border);
+        }
+
+        h2, h3 {
+            margin-bottom: 15px;
+            color: #0f172a;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        input[type="text"], select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        input[type="text"]:focus, select:focus, textarea:focus {
+            border-color: var(--primary);
+        }
+
+        textarea {
+            height: 160px;
+            resize: vertical;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 15px;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background-color: #64748b;
+        }
+
+        .btn-secondary:hover {
+            background-color: #475569;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .badge {
+            background: #e0e7ff;
+            color: #3730a3;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .difficulty-mudah { background: #dcfce7; color: #166534; }
+        .difficulty-sedang { background: #fef9c3; color: #854d0e; }
+        .difficulty-sulit { background: #fee2e2; color: #991b1b; }
+
+        .security-note {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .question-box {
+            margin-bottom: 20px;
+        }
+
+        .question-text {
+            font-size: 17px;
+            font-weight: 500;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .score-display {
+            text-align: center;
+            background: #eff6ff;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .score-display h2 {
+            color: #166534;
+            margin-bottom: 0;
+        }
+
+        #save-status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            text-align: center;
+            background: #f1f5f9;
+            color: #334155;
+        }
+
+        .lock-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.95);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .lock-overlay .box {
+            max-width: 460px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 30px;
+        }
+
+        .lock-overlay h2 {
+            color: #f87171;
+            margin-bottom: 10px;
+        }
+
+        .lock-count {
+            font-size: 56px;
+            font-weight: 800;
+            color: #fbbf24;
+            margin: 15px 0;
+        }
+
+        .lock-overlay p {
+            color: #cbd5e1;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- 1. HALAMAN REGISTRASI -->
+    <div id="registration-screen" class="screen active">
+        <h2>Ujian CBT Online - XI TKJ</h2>
+        <p style="margin-bottom: 20px; color: #64748b;">5 soal esai diacak dari bank soal. Layar akan terkunci saat ujian dimulai.</p>
+        <div class="security-note">
+            <strong>Perhatian:</strong> Selama ujian, layar dikunci penuh (fullscreen). Jika terdeteksi pindah / keluar dari layar
+            terlalu lama, ujian Anda akan <strong>dikirim otomatis</strong> dan nilai akan dicatat dengan status pelanggaran.
+        </div>
+        <form id="reg-form">
+            <div class="form-group">
+                <label for="nama">Nama Lengkap</label>
+                <input type="text" id="nama" placeholder="Masukkan nama lengkap" required>
+            </div>
+            <div class="form-group">
+                <label for="kelas">Kelas</label>
+                <select id="kelas" required>
+                    <option value="">-- Pilih Kelas --</option>
+                    <option value="XI TKJ 1">XI TKJ 1</option>
+                    <option value="XI TKJ 2">XI TKJ 2</option>
+                    <option value="XI TKJ 3">XI TKJ 3</option>
+                </select>
+            </div>
+            <button type="submit" class="btn" style="width: 100%;">Mulai Ujian (Kunci Layar)</button>
+        </form>
+    </div>
+
+    <!-- 2. HALAMAN UJIAN -->
+    <div id="quiz-screen" class="screen">
+        <div class="quiz-header">
+            <div>
+                <span id="user-info" style="font-weight: 600;"></span>
+            </div>
+            <div>
+                Soal <span id="current-question-num">1</span> dari <span id="total-questions-num">5</span>
+            </div>
+        </div>
+
+        <div class="security-note">
+            <strong>&#128274; Mode Terkunci:</strong> Jangan pindah layar / tutup tab / keluar fullscreen. Sistem mendeteksi dan
+            mengirim ujian secara otomatis jika Anda keluar terlalu lama.
+        </div>
+
+        <div class="question-box">
+            <div style="margin-bottom: 10px;">
+                <span id="difficulty-badge" class="badge"></span>
+                <span style="font-size: 13px; color: #64748b; margin-left: 5px;">Bobot: <span id="question-weight"></span> Poin</span>
+            </div>
+            <div class="question-text" id="question-text"></div>
+            <textarea id="answer-input" placeholder="Ketik jawaban Anda di sini dengan lengkap..."></textarea>
+        </div>
+
+        <div class="nav-buttons">
+            <button id="prev-btn" class="btn btn-secondary" onclick="navigate(-1)">Sebelumnya</button>
+            <button id="next-btn" class="btn" onclick="navigate(1)">Berikutnya</button>
+            <button id="submit-btn" class="btn" style="background-color: #16a34a; display: none;" onclick="submitExam()">Selesaikan Ujian</button>
+        </div>
+    </div>
+
+    <!-- 3. HALAMAN TERIMA KASIH -->
+    <div id="result-screen" class="screen">
+        <div class="score-display">
+            <h2 style="margin-bottom: 10px;">Terima Kasih!</h2>
+            <p style="color: #64748b;">Jawaban Anda telah terkirim dan tersimpan di sistem.</p>
+            <div id="result-user-info" style="color: #64748b; font-weight: 600; margin-top: 10px;"></div>
+        </div>
+
+        <div id="save-status" style="text-align: center; margin-top: 10px;">Menyimpan jawaban ke database...</div>
+        <button id="retry-btn" class="btn btn-secondary" style="width: 100%; margin-top: 10px; display: none;" onclick="cobaKirimUlang()">Coba Kirim Ulang Sekarang</button>
+        <button class="btn" style="width: 100%; margin-top: 20px;" onclick="location.reload()">Selesai</button>
+    </div>
+
+</div>
+
+<!-- Overlay Peringatan Saat Keluar Layar -->
+<div id="lock-overlay" class="lock-overlay" style="display: none;">
+    <div class="box">
+        <h2 id="lock-title">Peringatan!</h2>
+        <p>Anda terdeteksi keluar dari layar ujian. Kembalilah ke layar ujian sekarang,</p>
+        <div class="lock-count" id="lock-count">5</div>
+        <p id="lock-note">...</p>
+    </div>
+</div>
+
+<script>
+    // ============================================================
+    // KONFIGURASI - Sesuaikan di sini
+    // ============================================================
+    const KONFIGURASI = {
+        JUMLAH_SOAL: 5,                              // jumlah soal per sesi
+        GRACE_DETIK: 5,                              // tenggang waktu keluar layar (detik) sebelum auto-submit
+        WEB_APP_URL: "https://script.google.com/macros/s/AKfycby5tkkTAlNh_WbjKobGSvU3yRtPpMy5FV-tP_bJDpeRC5MEeU3c8knEIw1_n8B65sO3YQ/exec",   // URL Web App Apps Script
+        SPREADSHEET_ID: "1n38tipqErW-E7MfYE__FZBFQaHpmUmvIGigvM6vN-TU"
+    };
+
+    // ============================================================
+    // DATABASE SOAL (30 Soal)
+    // ============================================================
+    const bankSoal = [
+        { id: "S001", pertanyaan: "Jelaskan dengan kalimat Anda sendiri apa yang dimaksud dengan 'sistem' dalam cakupan teknik elektronika dan jaringan.", tingkat: "Mudah", bobot: 10, kataKunci: ["kumpulan","elemen","komponen","terintegrasi","tujuan"] },
+        { id: "S002", pertanyaan: "Sebutkan komponen utama dalam sistem kendali yang berfungsi sebagai pemroses atau pengambil keputusan.", tingkat: "Mudah", bobot: 10, kataKunci: ["controller","pengontrol","pemroses","mikrokontroler"] },
+        { id: "S003", pertanyaan: "Apa perbedaan mendasar antara sistem kendali yang dioperasikan secara manual dan otomatis?", tingkat: "Mudah", bobot: 10, kataKunci: ["manual","otomatis","campur tangan","manusia"] },
+        { id: "S004", pertanyaan: "Dalam terminologi sistem kendali, apa yang dimaksud dengan 'Plant' atau objek yang dikendalikan?", tingkat: "Mudah", bobot: 10, kataKunci: ["plant","objek","dikendalikan","sasaran"] },
+        { id: "S005", pertanyaan: "Sebutkan dua jenis utama sistem kendali berdasarkan ada atau tidaknya jalur umpan balik (feedback).", tingkat: "Mudah", bobot: 10, kataKunci: ["loop terbuka","loop tertutup","open-loop","closed-loop"] },
+        { id: "S006", pertanyaan: "Apa fungsi utama dari sensor di dalam sebuah sistem kendali otomatis?", tingkat: "Mudah", bobot: 10, kataKunci: ["sensor","mendeteksi","besaran fisik","sinyal","masukan"] },
+        { id: "S007", pertanyaan: "Berikan satu contoh sederhana sistem kendali manual yang sering Anda jumpai di rumah atau sekolah.", tingkat: "Mudah", bobot: 10, kataKunci: ["saklar","lampu","keran air","manual"] },
+        { id: "S008", pertanyaan: "Apa yang dimaksud dengan variabel keluaran (output) pada diagram blok sistem kendali?", tingkat: "Mudah", bobot: 10, kataKunci: ["keluaran","output","hasil","respon"] },
+        { id: "S009", pertanyaan: "Mengapa kestabilan menjadi faktor penting yang harus diperhatikan dalam perancangan suatu sistem kendali?", tingkat: "Mudah", bobot: 10, kataKunci: ["stabil","kestabilan","keandalan","error"] },
+        { id: "S010", pertanyaan: "Apa peran dari sinyal masukan (input) dalam mengawali siklus kerja sistem kendali?", tingkat: "Mudah", bobot: 10, kataKunci: ["masukan","input","perintah","pemicu"] },
+        { id: "S011", pertanyaan: "Mengapa sistem kendali loop terbuka (open-loop) sangat bergantung pada kalibrasi awal dan rentan terhadap gangguan luar?", tingkat: "Sedang", bobot: 15, kataKunci: ["kalibrasi","gangguan","umpan balik","koreksi"] },
+        { id: "S012", pertanyaan: "Jelaskan bagaimana mekanisme umpan balik (feedback) pada sistem loop tertutup bekerja untuk mengurangi kesalahan (error).", tingkat: "Sedang", bobot: 15, kataKunci: ["feedback","umpan balik","error","kesalahan","membandingkan"] },
+        { id: "S013", pertanyaan: "Saat membedah sistem kerja mesin cuci otomatis, bagian mana yang bertindak sebagai pemroses instruksi pencucian?", tingkat: "Sedang", bobot: 15, kataKunci: ["controller","pemroses","modul","pengatur waktu"] },
+        { id: "S014", pertanyaan: "Berdasarkan diskusi kelas, apa argumen utama yang membedakan efisiensi saklar manual dengan sensor gerak otomatis untuk lampu ruangan?", tingkat: "Sedang", bobot: 15, kataKunci: ["efisiensi","otomatis","energi","sensor gerak"] },
+        { id: "S015", pertanyaan: "Analisislah hubungan sebab-akibat antara gangguan (disturbance) luar dengan akurasi pada sistem kendali loop terbuka.", tingkat: "Sedang", bobot: 15, kataKunci: ["disturbance","gangguan","akurasi","penyimpangan"] },
+        { id: "S016", pertanyaan: "Jelaskan alasan mengapa sistem pendingin ruangan (AC) modern wajib menggunakan sistem kendali loop tertutup.", tingkat: "Sedang", bobot: 15, kataKunci: ["suhu","sensor","loop tertutup","stabil","pendingin"] },
+        { id: "S017", pertanyaan: "Uraikan fungsi aktuator dalam menjembatani perintah dari sistem pemroses menuju ke plant fisik.", tingkat: "Sedang", bobot: 15, kataKunci: ["aktuator","penggerak","perintah","plant"] },
+        { id: "S018", pertanyaan: "Bagaimana cara kerja transduser dalam mengubah besaran fisik (seperti suhu atau cahaya) menjadi sinyal elektrik?", tingkat: "Sedang", bobot: 15, kataKunci: ["transduser","mengubah","besaran fisik","elektrik"] },
+        { id: "S019", pertanyaan: "Evaluasi kelemahan fatal sistem kendali loop terbuka apabila diterapkan pada pengaturan suhu oven industri makanan.", tingkat: "Sedang", bobot: 15, kataKunci: ["suhu","oven","tanpa umpan balik","koreksi","panas"] },
+        { id: "S020", pertanyaan: "Berdasarkan konsep dasar membedah sistem, apa elemen kritis yang membedakan sistem rekayasa aktif dan pasif?", tingkat: "Sedang", bobot: 15, kataKunci: ["aktif","pasif","energi","respon","elemen"] },
+        { id: "S021", pertanyaan: "Rancang skema diagram blok sistem kendali loop tertutup secara analitis untuk kestabilan router jaringan saat terjadi lonjakan trafik data, lalu jelaskan peran sensornya.", tingkat: "Sulit", bobot: 20, kataKunci: ["router","trafik","sensor","loop tertutup","feedback","kestabilan"] },
+        { id: "S022", pertanyaan: "Kritisi argumen yang menyatakan bahwa sistem loop terbuka lebih unggul dalam hal kecepatan eksekusi. Berikan sanggahan berbasis teori dasar sistem kendali!", tingkat: "Sulit", bobot: 20, kataKunci: ["kecepatan","akurasi","umpan balik","risiko","gangguan"] },
+        { id: "S023", pertanyaan: "Sebuah sistem otomatisasi pompa air mengalami osilasi akibat pembacaan sensor level air yang tidak stabil. Analisis cara memodifikasi loop umpan balik untuk meredam gangguan tersebut.", tingkat: "Sulit", bobot: 20, kataKunci: ["osilasi","sensor air","umpan balik","redaman","stabil"] },
+        { id: "S024", pertanyaan: "Evaluasi penerapan sistem kendali tanpa umpan balik pada jalur produksi pabrik berkecepatan tinggi. Solusi pemodelan apa yang harus diusulkan?", tingkat: "Sulit", bobot: 20, kataKunci: ["pabrik","kecepatan tinggi","tanpa umpan balik","koreksi otomatis"] },
+        { id: "S025", pertanyaan: "Bedah kompleksitas interaksi antara error detector, controller, dan aktuator saat terjadi lonjakan disturbance eksternal secara simultan pada sistem kendali.", tingkat: "Sulit", bobot: 20, kataKunci: ["error detector","controller","aktuator","disturbance","simultan"] },
+        { id: "S026", pertanyaan: "Formulasikan argumen metakognisi individu: Mengapa pemahaman mendalam tentang dasar sistem kendali krusial bagi siswa TKJ dalam mengelola jaringan komputer?", tingkat: "Sulit", bobot: 20, kataKunci: ["metakognisi","tkj","jaringan","kendali","otomasi"] },
+        { id: "S027", pertanyaan: "Analisis mendalam: Apa implikasi fatal jika waktu tunda (time delay) pada sensor umpan balik sistem kendali tertutup bernilai terlalu besar terhadap respons sistem?", tingkat: "Sulit", bobot: 20, kataKunci: ["time delay","waktu tunda","sensor","umpan balik","respons","fatal"] },
+        { id: "S028", pertanyaan: "Uraikan proses dekomposisi sistem (system breakdown) dari perangkat router cerdas yang mampu mengatur alokasi bandwidth otomatis berdasarkan kepadatan pengguna.", tingkat: "Sulit", bobot: 20, kataKunci: ["dekomposisi","router","bandwidth otomatis","kepadatan","sistem"] },
+        { id: "S029", pertanyaan: "Tinjau skenario di mana sistem kendali loop tertutup gagal mencapai titik setel (setpoint). Analisis komponen mana yang paling rentan menjadi titik kegagalan utama?", tingkat: "Sulit", bobot: 20, kataKunci: ["setpoint","titik setel","kegagalan","sensor","controller"] },
+        { id: "S030", pertanyaan: "Sintesiskan konsep dasar sistem kendali manual, open-loop, dan closed-loop ke dalam kerangka keputusan perbaikan efisiensi energi di lab komputer sekolah.", tingkat: "Sulit", bobot: 20, kataKunci: ["sintesis","efisiensi energi","laboratorium","keputusan","kendali"] }
+    ];
+
+    // ============================================================
+    // VARIABEL STATUS APLIKASI
+    // ============================================================
+    let studentData = { nama: '', kelas: '' };
+    let selectedQuestions = [];
+    let currentQuestionIndex = 0;
+    let userAnswers = {};
+    let quizActive = false;
+    let submitted = false;
+    let lastStatus = 'Selesai (dikirim manual)';
+    let examStartTime = 0;
+    let lockDisabledUntil = 0;
+    let graceTimer = null;
+    let currentLockReason = null;
+
+    const regForm = document.getElementById('reg-form');
+    const regScreen = document.getElementById('registration-screen');
+    const quizScreen = document.getElementById('quiz-screen');
+    const resultScreen = document.getElementById('result-screen');
+    const lockOverlay = document.getElementById('lock-overlay');
+
+    function escapeHtml(str) {
+        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // ============================================================
+    // 1. MULAI UJIAN (REGISTRASI + KUNCI LAYAR)
+    // ============================================================
+    regForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        studentData.nama = document.getElementById('nama').value.trim();
+        studentData.kelas = document.getElementById('kelas').value;
+
+        selectedQuestions = getRandomQuestions(bankSoal, KONFIGURASI.JUMLAH_SOAL);
+        userAnswers = {};
+        currentQuestionIndex = 0;
+        quizActive = true;
+        submitted = false;
+        examStartTime = Date.now();
+
+        document.getElementById('user-info').innerText = studentData.nama + ' (' + studentData.kelas + ')';
+        document.getElementById('total-questions-num').innerText = selectedQuestions.length;
+
+        regScreen.classList.remove('active');
+        quizScreen.classList.add('active');
+
+        loadQuestion(0);
+        enterFullscreen();
+    });
+
+    function getRandomQuestions(arr, n) {
+        const shuffled = [...arr].sort(() => 0.5 - Math.random());
+        return shuffled.slice(0, n);
+    }
+
+    function enterFullscreen() {
+        const el = document.documentElement;
+        if (el.requestFullscreen) { el.requestFullscreen().catch(function(){}); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function exitFullscreen() {
+        if (document.exitFullscreen) { document.exitFullscreen().catch(function(){}); }
+        else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+    }
+
+    // ============================================================
+    // 2. MEMUAT SOAL, NAVIGASI, & SAVE JAWABAN
+    // ============================================================
+    function loadQuestion(index) {
+        currentQuestionIndex = index;
+        const question = selectedQuestions[index];
+
+        document.getElementById('current-question-num').innerText = index + 1;
+        document.getElementById('question-text').innerText = question.id + ' - ' + question.pertanyaan;
+        document.getElementById('question-weight').innerText = question.bobot;
+
+        const badge = document.getElementById('difficulty-badge');
+        badge.innerText = question.tingkat;
+        badge.className = 'badge difficulty-' + question.tingkat.toLowerCase();
+
+        const answerInput = document.getElementById('answer-input');
+        answerInput.value = userAnswers[question.id] || '';
+
+        document.getElementById('prev-btn').style.display = index === 0 ? 'none' : 'inline-block';
+        if (index === selectedQuestions.length - 1) {
+            document.getElementById('next-btn').style.display = 'none';
+            document.getElementById('submit-btn').style.display = 'inline-block';
+        } else {
+            document.getElementById('next-btn').style.display = 'inline-block';
+            document.getElementById('submit-btn').style.display = 'none';
+        }
+    }
+
+    function navigate(direction) {
+        saveCurrentAnswer();
+        const newIndex = currentQuestionIndex + direction;
+        if (newIndex >= 0 && newIndex < selectedQuestions.length) {
+            loadQuestion(newIndex);
+        }
+    }
+
+    function saveCurrentAnswer() {
+        if (!selectedQuestions[currentQuestionIndex]) return;
+        const question = selectedQuestions[currentQuestionIndex];
+        userAnswers[question.id] = document.getElementById('answer-input').value;
+    }
+
+    // ============================================================
+    // 3. PENGUNCIAN LAYAR (DETEKSI KELUAR / PINDAH LAYAR)
+    // ============================================================
+    function handleLock(reason) {
+        if (!quizActive || submitted) return;
+        if (Date.now() < lockDisabledUntil) return;
+        if (Date.now() - examStartTime < 2000) return; // masa tenang saat transisi mulai
+        if (graceTimer) return; // sudah menghitung mundur
+        startGraceCountdown(reason);
+    }
+
+    function startGraceCountdown(reason) {
+        currentLockReason = reason;
+        let sisa = KONFIGURASI.GRACE_DETIK;
+
+        document.getElementById('lock-title').innerText = reason;
+        document.getElementById('lock-count').innerText = sisa;
+        document.getElementById('lock-note').innerText =
+            'Anda keluar dari layar ujian. Jika tidak kembali ke layar ujian dalam ' + sisa
+            + ' detik, jawaban Anda akan dikirim otomatis sebagai ' + reason + '.';
+        lockOverlay.style.display = 'flex';
+
+        graceTimer = setInterval(function() {
+            sisa--;
+            document.getElementById('lock-count').innerText = sisa;
+            if (sisa <= 0) {
+                clearInterval(graceTimer);
+                graceTimer = null;
+                lockOverlay.style.display = 'none';
+                forceSubmit(reason);
+            }
+        }, 1000);
+    }
+
+    function cancelGraceIfBack(reason) {
+        if (!graceTimer) return;
+        if (currentLockReason !== reason) return;
+        clearInterval(graceTimer);
+        graceTimer = null;
+        currentLockReason = null;
+        lockOverlay.style.display = 'none';
+    }
+
+    document.addEventListener('fullscreenchange', function() {
+        if (!quizActive || submitted) return;
+        if (!document.fullscreenElement) {
+            handleLock('Terlalu lama keluar dari sistem ujian (keluar dari layar penuh)');
+        } else {
+            cancelGraceIfBack('Terlalu lama keluar dari sistem ujian (keluar dari layar penuh)');
+        }
+    });
+
+    document.addEventListener('visibilitychange', function() {
+        if (!quizActive || submitted) return;
+        if (document.hidden) {
+            handleLock('Terlalu lama keluar dari sistem ujian (pindah layar/tab)');
+        } else {
+            cancelGraceIfBack('Terlalu lama keluar dari sistem ujian (pindah layar/tab)');
+        }
+    });
+
+    window.addEventListener('blur', function() {
+        handleLock('Terlalu lama keluar dari sistem ujian');
+    });
+
+    window.addEventListener('focus', function() {
+        cancelGraceIfBack('Terlalu lama keluar dari sistem ujian');
+    });
+
+    document.addEventListener('contextmenu', function(e) {
+        if (quizActive) e.preventDefault();
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (!quizActive) return;
+        if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C'))) {
+            e.preventDefault();
+        }
+    });
+
+    // Proteksi: cegah tab benar-benar ditutup/refresh saat ujian berlangsung
+    window.addEventListener('beforeunload', function(e) {
+        if (quizActive && !submitted) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+
+    // Proteksi: auto-save jawaban setiap 5 detik agar tidak hilang jika terjadi error/refresh paksa
+    setInterval(function() {
+        if (quizActive && !submitted) saveCurrentAnswer();
+    }, 5000);
+
+    // ============================================================
+    // 4. PENILAIAN OTOMATIS (BERBASIS KATA KUNCI)
+    // ============================================================
+    function calculateScore() {
+        let totalObtainedScore = 0;
+        let maxPossibleScore = 0;
+        let details = [];
+
+        selectedQuestions.forEach(function(q, i) {
+            maxPossibleScore += q.bobot;
+            const studentAns = (userAnswers[q.id] || '').toLowerCase();
+
+            let matchedKeywords = 0;
+            q.kataKunci.forEach(function(keyword) {
+                if (studentAns.includes(keyword.toLowerCase())) {
+                    matchedKeywords++;
+                }
+            });
+
+            const scoreRatio = q.kataKunci.length > 0 ? (matchedKeywords / q.kataKunci.length) : 0;
+            const questionScore = Math.round(scoreRatio * q.bobot);
+            totalObtainedScore += questionScore;
+
+            details.push({
+                no: i + 1,
+                id: q.id,
+                question: q.pertanyaan,
+                level: q.tingkat,
+                userAnswer: userAnswers[q.id] || '<i>Tidak dijawab</i>',
+                score: questionScore,
+                maxScore: q.bobot,
+                keywords: q.kataKunci.join(', ')
+            });
+        });
+
+        const finalScoreScale100 = Math.round((totalObtainedScore / maxPossibleScore) * 100);
+
+        return { finalScore: finalScoreScale100, details: details };
+    }
+
+    // ============================================================
+    // 5. SUBMIT UJIAN (MANUAL / OTOMATIS)
+    // ============================================================
+    function submitExam() {
+        if (submitted) return;
+        lockDisabledUntil = Date.now() + 2000; // abaikan event blur saat dialog konfirmasi terbuka
+        if (confirm('Apakah Anda yakin ingin menyelesaikan ujian ini?')) {
+            finishExam('Selesai (dikirim manual)');
+        } else {
+            lockDisabledUntil = Date.now() + 1500;
+            enterFullscreen();
+        }
+    }
+
+    function forceSubmit(reason) {
+        finishExam(reason);
+    }
+
+    function finishExam(status) {
+        if (submitted) return;
+        submitted = true;
+        quizActive = false;
+        lastStatus = status;
+
+        saveCurrentAnswer();
+
+        if (graceTimer) {
+            clearInterval(graceTimer);
+            graceTimer = null;
+        }
+        lockOverlay.style.display = 'none';
+
+        const results = calculateScore();
+        showThanks();
+
+        exitFullscreen();
+        simpanKeGoogleSheets(results, status);
+    }
+
+    function showThanks() {
+        document.getElementById('result-user-info').innerText = studentData.nama + ' - ' + studentData.kelas;
+        quizScreen.classList.remove('active');
+        resultScreen.classList.add('active');
+    }
+
+    // ============================================================
+    // 6. SIMPAN DATA KE GOOGLE SHEETS (antrean + kirim ulang otomatis)
+    // ============================================================
+    function simpanKeGoogleSheets(results, status) {
+        const saveStatus = document.getElementById('save-status');
+
+        if (KONFIGURASI.WEB_APP_URL.includes('PASTE_URL_DISINI')) {
+            saveStatus.innerHTML = 'Jawaban terkirim, tetapi BELUM tersimpan ke Google Sheets. <strong>WEB_APP_URL belum diisi</strong> di KONFIGURASI cbt.html.';
+            saveStatus.style.background = '#fee2e2';
+            saveStatus.style.color = '#991b1b';
+            return;
+        }
+
+        const record = {
+            id: Date.now(),
+            timestamp: new Date().toLocaleString('id-ID'),
+            nama: studentData.nama,
+            kelas: studentData.kelas,
+            status: status,
+            finalScore: results.finalScore,
+            details: results.details.map(function(d) {
+                return {
+                    no: d.no,
+                    id: d.id,
+                    question: d.question,
+                    level: d.level,
+                    maxScore: d.maxScore,
+                    userAnswer: String(d.userAnswer).replace(/<\/*i>/g, ''),
+                    keywords: d.keywords,
+                    score: d.score
+                };
+            })
+        };
+
+        // Simpan dulu ke localStorage (lokal), lalu kirim
+        const antrian = antrianBaca();
+        antrian.push(record);
+        localStorage.setItem('cbt_antrian', JSON.stringify(antrian));
+
+        cobaKirimAntrian();
+    }
+
+    function antrianBaca() {
+        try { return JSON.parse(localStorage.getItem('cbt_antrian') || '[]'); }
+        catch (e) { return []; }
+    }
+
+    function antrianSimpan(antrian) {
+        localStorage.setItem('cbt_antrian', JSON.stringify(antrian));
+    }
+
+    let sedangMengirim = false;
+
+    function cobaKirimAntrian() {
+        if (sedangMengirim) return;
+        const antrian = antrianBaca();
+        if (antrian.length === 0) {
+            document.getElementById('retry-btn').style.display = 'none';
+            return;
+        }
+
+        const saveStatus = document.getElementById('save-status');
+        const sisa = antrian.length;
+        saveStatus.innerText = 'Mengirim ' + sisa + ' catatan ujian ke database...';
+        saveStatus.style.background = '#eff6ff';
+        saveStatus.style.color = '#1d4ed8';
+
+        sedangMengirim = true;
+        const payload = antrian[0];
+
+        fetch(KONFIGURASI.WEB_APP_URL, {
+            method: 'POST',
+            mode: 'cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({
+                timestamp: payload.timestamp,
+                nama: payload.nama,
+                kelas: payload.kelas,
+                status: payload.status,
+                finalScore: payload.finalScore,
+                details: payload.details
+            })
+        })
+        .then(function(r) { return r.text(); })
+        .then(function(text) {
+            let res = null;
+            try { res = JSON.parse(text); } catch (err2) { res = null; }
+
+            if (res && res.success) {
+                // sukses -> hapus dari antrean, kirim sisanya
+                const q = antrianBaca().filter(function(item) { return item.id !== payload.id; });
+                antrianSimpan(q);
+                sedangMengirim = false;
+
+                if (q.length === 0) {
+                    saveStatus.innerText = 'Jawaban berhasil tersimpan ke Google Sheets.';
+                    saveStatus.style.background = '#dcfce7';
+                    saveStatus.style.color = '#166534';
+                    document.getElementById('retry-btn').style.display = 'none';
+                } else {
+                    cobaKirimAntrian();
+                }
+            } else {
+                gagalKirim(res && res.error);
+            }
+        })
+        .catch(function() {
+            gagalKirim(null);
+        });
+    }
+
+    function gagalKirim(errorServer) {
+        sedangMengirim = false;
+        const saveStatus = document.getElementById('save-status');
+        const antrian = antrianBaca();
+
+        saveStatus.innerText = 'Jaringan tidak stabil: ' + antrian.length
+            + ' jawaban belum terkirim ke Google Sheets. Data aman tersimpan di perangkat ini, akan dicoba lagi otomatis.';
+        saveStatus.style.background = '#fef3c7';
+        saveStatus.style.color = '#92400e';
+        document.getElementById('retry-btn').style.display = 'block';
+
+        // coba ulang otomatis setiap 10 detik
+        if (errorServer) console.log('Server Apps Script:', errorServer);
+    }
+
+    setInterval(function() {
+        if (KONFIGURASI.WEB_APP_URL.includes('PASTE_URL_DISINI')) return;
+        const antrian = antrianBaca();
+        if (antrian.length > 0 && !sedangMengirim) cobaKirimAntrian();
+    }, 10000);
+
+    function cobaKirimUlang() {
+        if (sedangMengirim) return;
+        cobaKirimAntrian();
+    }
+
+    // Saat halaman dibuka, kirim ulang sisa antrean dari sesi sebelumnya
+    (function() {
+        const antrian = antrianBaca();
+        if (antrian.length > 0 && !KONFIGURASI.WEB_APP_URL.includes('PASTE_URL_DISINI')) {
+            setTimeout(cobaKirimAntrian, 1500);
+        }
+    })();
+</script>
+
+</body>
+</html>
